@@ -1,0 +1,91 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  hsnCode     String
+  unit        String   @default("Pcs")
+  price       Float
+  gstRate     Float    @default(18)
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  invoiceItems InvoiceItem[]
+
+  @@map("products")
+}
+
+model Invoice {
+  id            String        @id @default(cuid())
+  invoiceNumber String        @unique
+  invoiceDate   DateTime
+  dueDate       DateTime?
+  // Buyer
+  buyerName     String
+  buyerAddress  String?
+  buyerGST      String?
+  buyerPhone    String?
+  buyerEmail    String?
+  // Tax
+  taxType       TaxType       @default(INTRASTATE)
+  // Totals
+  subtotal      Float
+  totalCGST     Float         @default(0)
+  totalSGST     Float         @default(0)
+  totalIGST     Float         @default(0)
+  totalTax      Float
+  grandTotal    Float
+  // Meta
+  notes         String?
+  status        InvoiceStatus @default(UNPAID)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  items         InvoiceItem[]
+
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id          String  @id @default(cuid())
+  invoiceId   String
+  productId   String
+  productName String
+  hsnCode     String
+  unit        String
+  quantity    Float
+  price       Float
+  gstRate     Float
+  amount      Float
+  cgst        Float   @default(0)
+  sgst        Float   @default(0)
+  igst        Float   @default(0)
+  totalAmount Float
+
+  invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  product     Product @relation(fields: [productId], references: [id])
+
+  @@map("invoice_items")
+}
+
+enum TaxType {
+  INTRASTATE
+  INTERSTATE
+}
+
+enum InvoiceStatus {
+  DRAFT
+  UNPAID
+  PAID
+  OVERDUE
+}

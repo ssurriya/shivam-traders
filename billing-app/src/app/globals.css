@@ -1,0 +1,138 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ink: #080c10;
+  --surface: #0f1419;
+  --surface2: #161d26;
+  --surface3: #1e2732;
+  --border: #2a3441;
+  --border2: #364554;
+  --accent: #3b82f6;
+  --accent-glow: rgba(59, 130, 246, 0.15);
+  --gold: #f59e0b;
+  --gold-glow: rgba(245, 158, 11, 0.12);
+  --text: #e8edf2;
+  --text-muted: #64748b;
+  --text-dim: #8899aa;
+  --green: #10b981;
+  --red: #ef4444;
+  --amber: #f59e0b;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--ink);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* ── Form elements ── */
+.input {
+  @apply w-full rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-[#64748b] transition-all outline-none;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+}
+.input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+.input:hover:not(:focus) { border-color: var(--border2); }
+
+select.input option { background: var(--surface2); color: var(--text); }
+
+/* ── Cards ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.card-inner {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+/* ── Buttons ── */
+.btn {
+  @apply inline-flex items-center gap-2 font-medium rounded-lg text-sm transition-all select-none active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed;
+  padding: 0.575rem 1.1rem;
+}
+.btn-blue {
+  @apply btn;
+  background: var(--accent);
+  color: white;
+}
+.btn-blue:hover { background: #2563eb; box-shadow: 0 0 20px var(--accent-glow); }
+
+.btn-ghost {
+  @apply btn;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+}
+.btn-ghost:hover { border-color: var(--border2); color: var(--text); }
+
+.btn-danger {
+  @apply btn;
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.2);
+  color: #f87171;
+}
+.btn-danger:hover { background: rgba(239,68,68,0.15); }
+
+.btn-success {
+  @apply btn;
+  background: rgba(16,185,129,0.1);
+  border: 1px solid rgba(16,185,129,0.2);
+  color: #34d399;
+}
+.btn-success:hover { background: rgba(16,185,129,0.18); }
+
+/* ── Badge ── */
+.badge {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wide;
+}
+.badge-PAID { background: rgba(16,185,129,0.12); color: #34d399; border: 1px solid rgba(16,185,129,0.2); }
+.badge-UNPAID { background: rgba(245,158,11,0.12); color: #fbbf24; border: 1px solid rgba(245,158,11,0.2); }
+.badge-OVERDUE { background: rgba(239,68,68,0.12); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+.badge-DRAFT { background: rgba(100,116,139,0.12); color: #94a3b8; border: 1px solid rgba(100,116,139,0.2); }
+
+/* ── Table ── */
+.tbl { @apply w-full text-sm border-collapse; }
+.tbl thead th {
+  @apply text-left py-3 px-4 text-xs uppercase tracking-widest font-medium;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+.tbl tbody td { @apply py-3.5 px-4; border-bottom: 1px solid var(--border); }
+.tbl tbody tr { transition: background 0.15s; }
+.tbl tbody tr:hover { background: var(--surface2); }
+.tbl tbody tr:last-child td { border-bottom: none; }
+
+/* ── Page header ── */
+.page-header {
+  @apply flex items-center justify-between mb-8;
+}
+.page-title {
+  font-family: 'Syne', sans-serif;
+  @apply text-3xl font-bold text-white tracking-tight;
+}
+.page-sub { @apply text-sm mt-1; color: var(--text-muted); }
+
+/* ── Section label ── */
+.section-label {
+  @apply text-xs font-semibold uppercase tracking-widest mb-3;
+  color: var(--text-muted);
+}
