@@ -57,7 +57,7 @@ cp .env.example .env.local
 
 Edit `.env.local`:
 ```env
-DATABASE_URL="postgresql://postgres:yourpassword@localhost:5432/billing_db"
+DATABASE_URL="postgresql://neondb_owner:npg_vW0UAg4atrVD@ep-flat-night-anp3qnoa-pooler.c-6.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
 ```
 
 ### Step 5 — Run Migrations & Seed
