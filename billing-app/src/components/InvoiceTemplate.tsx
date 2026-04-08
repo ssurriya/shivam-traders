@@ -36,9 +36,10 @@ export default function InvoiceTemplate({ invoice }: { invoice: Invoice }) {
             </div>
             <div style={{ fontSize: "11px", color: "#94a3b8", lineHeight: "1.6" }}>
               GST Registered Dealer<br />
-              GSTIN: 22AAAAA0000A1Z5<br />
-              123, Market Road, Raipur, CG - 492001<br />
-              📞 +91 98765 43210 · ✉ info@shivamtraders.in
+              GSTIN: 33CNWPA3211L1Z1<br />
+              2061, Servaikaran Street, Narayana Pillai Lane <br />
+              Karanthai, Thanjavur. 613002 <br />
+              📞 +91 9894988392 · ✉ shivamtraders220396@gmail.com
             </div>
           </div>
           <div style={{ textAlign: "right" }}>
@@ -50,14 +51,14 @@ export default function InvoiceTemplate({ invoice }: { invoice: Invoice }) {
               <div><strong style={{ color: "white" }}>Date:</strong> {fDate(invoice.invoiceDate)}</div>
               {invoice.dueDate && <div><strong style={{ color: "white" }}>Due:</strong> {fDate(invoice.dueDate)}</div>}
             </div>
-            <div style={{ marginTop: "8px" }}>
+            {/* <div style={{ marginTop: "8px" }}>
               <span style={{
                 display: "inline-block", padding: "4px 12px", borderRadius: "999px", fontSize: "10px",
                 fontWeight: "700", letterSpacing: "1px", textTransform: "uppercase",
                 background: invoice.status === "PAID" ? "#10b981" : invoice.status === "OVERDUE" ? "#ef4444" : "#f59e0b",
                 color: "white",
               }}>{invoice.status}</span>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
@@ -76,13 +77,11 @@ export default function InvoiceTemplate({ invoice }: { invoice: Invoice }) {
         </div>
         <div style={{ flex: 1, padding: "20px 32px" }}>
           <div style={{ fontSize: "10px", fontWeight: "700", color: "#64748b", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: "8px" }}>
-            PAYMENT INFO
+            Salesman Details
           </div>
           <div style={{ fontSize: "11px", color: "#475569", lineHeight: "2" }}>
-            <div><strong>Tax Type:</strong> {invoice.taxType === "INTRASTATE" ? "Intrastate (CGST + SGST)" : "Interstate (IGST)"}</div>
-            <div><strong>Bank:</strong> State Bank of India</div>
-            <div><strong>A/C No:</strong> XXXX XXXX XXXX 1234</div>
-            <div><strong>IFSC:</strong> SBIN0001234</div>
+            {invoice.salesmanName && <div><strong>Name:</strong> {invoice.salesmanName}</div>}
+            {invoice.salesmanPhone && <div><strong>Mobile:</strong> {invoice.salesmanPhone}</div>}
           </div>
         </div>
       </div>
@@ -92,14 +91,14 @@ export default function InvoiceTemplate({ invoice }: { invoice: Invoice }) {
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11px" }}>
           <thead>
             <tr style={{ background: "#f8fafc" }}>
-              {["#", "Product / Description", "HSN", "Qty", "Unit", "Rate (₹)", "Amount (₹)",
+              {["#", "Product / Description", "HSN", "Qty", "Unit", "Rate incl. GST (₹)", "Taxable Amt (₹)",
                 invoice.taxType === "INTRASTATE" ? "CGST" : "IGST",
                 invoice.taxType === "INTRASTATE" ? "SGST" : "",
                 "Total (₹)"].filter(Boolean).map((h, i) => (
-                <th key={i} style={{ padding: "10px 12px", textAlign: i <= 1 ? "left" : "right", fontWeight: "700", color: "#475569", fontSize: "9px", textTransform: "uppercase", letterSpacing: "1px", borderBottom: "2px solid #e2e8f0", borderTop: "2px solid #e2e8f0" }}>
-                  {h}
-                </th>
-              ))}
+                  <th key={i} style={{ padding: "10px 12px", textAlign: i <= 1 ? "left" : "right", fontWeight: "700", color: "#475569", fontSize: "9px", textTransform: "uppercase", letterSpacing: "1px", borderBottom: "2px solid #e2e8f0", borderTop: "2px solid #e2e8f0" }}>
+                    {h}
+                  </th>
+                ))}
             </tr>
           </thead>
           <tbody>
@@ -186,7 +185,7 @@ export default function InvoiceTemplate({ invoice }: { invoice: Invoice }) {
 
       {/* Footer */}
       <div style={{ background: "#f8fafc", borderTop: "2px solid #e2e8f0", padding: "12px 32px", textAlign: "center", color: "#94a3b8", fontSize: "10px" }}>
-        This is a computer generated invoice. Thank you for your business! · GSTIN: 22AAAAA0000A1Z5
+        This is a computer generated invoice. Thank you for your business! · GSTIN: 33CNWPA3211L1Z1
       </div>
     </div>
   );

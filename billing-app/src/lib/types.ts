@@ -49,6 +49,8 @@ export interface Invoice {
   totalTax: number;
   grandTotal: number;
   notes?: string | null;
+  salesmanName?: string | null;
+  salesmanPhone?: string | null;
   status: InvoiceStatus;
   items: InvoiceItem[];
   createdAt: string;

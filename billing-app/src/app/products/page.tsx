@@ -6,7 +6,6 @@ import type { Product } from "@/lib/types";
 import { Plus, Pencil, Trash2, X, Check, Package, Search } from "lucide-react";
 import toast from "react-hot-toast";
 
-const GST_RATES = [0, 5, 12, 18, 28];
 const UNITS = ["Pcs", "Kg", "Ltr", "Box", "Bag", "Set", "Nos", "Mtr", "Sqft", "Dozen"];
 const empty = { name: "", hsnCode: "", unit: "Pcs", price: 0, gstRate: 18, description: "" };
 
@@ -116,15 +115,14 @@ export default function ProductsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="section-label block">Base Price (₹) *</label>
+                  <label className="section-label block">Price incl. GST (₹) *</label>
                   <input className="input" type="number" step="0.01" min="0" placeholder="0.00"
                     value={form.price || ""} onChange={(e) => setForm({ ...form, price: parseFloat(e.target.value) || 0 })} />
                 </div>
                 <div>
-                  <label className="section-label block">GST Rate</label>
-                  <select className="input" value={form.gstRate} onChange={(e) => setForm({ ...form, gstRate: parseInt(e.target.value) })}>
-                    {GST_RATES.map((r) => <option key={r} value={r}>{r}%</option>)}
-                  </select>
+                  <label className="section-label block">GST Rate (%)</label>
+                  <input className="input" type="number" min="0" max="100" step="0.01" placeholder="e.g. 18"
+                    value={form.gstRate || ""} onChange={(e) => setForm({ ...form, gstRate: parseFloat(e.target.value) || 0 })} />
                 </div>
                 <div className="col-span-2">
                   <label className="section-label block">Description (optional)</label>
@@ -169,15 +167,14 @@ export default function ProductsPage() {
                   <th>Product Name</th>
                   <th>HSN Code</th>
                   <th>Unit</th>
-                  <th>Base Price</th>
-                  <th>GST %</th>
                   <th>Price incl. GST</th>
+                  <th>Base Price (excl.)</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.map((p, i) => {
-                  const gstAmt = (p.price * p.gstRate) / 100;
+                  const basePrice = p.price / (1 + p.gstRate / 100);
                   return (
                     <tr key={p.id}>
                       <td className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>{i + 1}</td>
@@ -191,14 +188,12 @@ export default function ProductsPage() {
                         </span>
                       </td>
                       <td style={{ color: "var(--text-dim)" }}>{p.unit}</td>
-                      <td className="font-mono font-medium text-white">₹{p.price.toLocaleString("en-IN")}</td>
-                      <td>
-                        <span className="badge" style={{ background: "rgba(59,130,246,0.1)", color: "#60a5fa", border: "1px solid rgba(59,130,246,0.2)" }}>
-                          {p.gstRate}%
-                        </span>
+                      <td className="font-mono font-medium text-white">
+                        ₹{p.price.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        <span className="ml-1 text-xs" style={{ color: "#60a5fa" }}>({p.gstRate}% GST)</span>
                       </td>
                       <td className="font-mono font-semibold" style={{ color: "#34d399" }}>
-                        ₹{(p.price + gstAmt).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        ₹{basePrice.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
                       <td>
                         <div className="flex items-center gap-1">

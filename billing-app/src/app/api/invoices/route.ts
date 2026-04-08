@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     const {
       invoiceNumber, invoiceDate, dueDate,
       buyerName, buyerAddress, buyerGST, buyerPhone, buyerEmail,
-      taxType, items, notes, status,
+      taxType, items, notes, status, salesmanName, salesmanPhone,
       subtotal, totalCGST, totalSGST, totalIGST, totalTax, grandTotal,
     } = body;
 
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
         dueDate: dueDate ? new Date(dueDate) : null,
         buyerName, buyerAddress, buyerGST, buyerPhone, buyerEmail,
         taxType: taxType || "INTRASTATE",
-        notes,
+        notes, salesmanName, salesmanPhone,
         status: status || "UNPAID",
         subtotal, totalCGST, totalSGST, totalIGST, totalTax, grandTotal,
         items: {

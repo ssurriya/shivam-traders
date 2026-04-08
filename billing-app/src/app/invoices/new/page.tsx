@@ -10,10 +10,13 @@ import Link from "next/link";
 
 const today = () => new Date().toISOString().split("T")[0];
 
+// price is GST-inclusive; extract base and tax with proper rounding
+// tax = round(price * gstRate / (100 + gstRate) * qty), base = total - tax
 function calcItems(items: InvoiceItem[], taxType: string): InvoiceItem[] {
   return items.map((item) => {
-    const amount = item.quantity * item.price;
-    const tax = (amount * item.gstRate) / 100;
+    const totalInclusive = item.quantity * item.price;
+    const tax = Math.round(totalInclusive * (item.gstRate / 100));
+    const amount = totalInclusive - tax;
     const half = tax / 2;
     return {
       ...item,
@@ -21,7 +24,7 @@ function calcItems(items: InvoiceItem[], taxType: string): InvoiceItem[] {
       cgst: taxType === "INTRASTATE" ? half : 0,
       sgst: taxType === "INTRASTATE" ? half : 0,
       igst: taxType === "INTERSTATE" ? tax : 0,
-      totalAmount: amount + tax,
+      totalAmount: totalInclusive,
     };
   });
 }
@@ -38,6 +41,10 @@ export default function NewInvoicePage() {
   const [taxType, setTaxType] = useState<"INTRASTATE" | "INTERSTATE">("INTRASTATE");
   const [notes, setNotes] = useState("");
 
+  // Salesman
+  const [salesmanName, setSalesmanName] = useState("");
+  const [salesmanPhone, setSalesmanPhone] = useState("");
+
   // Buyer
   const [buyerName, setBuyerName] = useState("");
   const [buyerAddress, setBuyerAddress] = useState("");
@@ -51,8 +58,9 @@ export default function NewInvoicePage() {
   useEffect(() => { api.products.list().then(setProducts); }, []);
 
   const makeItem = (p: Product): InvoiceItem => {
-    const amount = p.price;
-    const tax = (amount * p.gstRate) / 100;
+    const totalInclusive = p.price;
+    const tax = Math.round(totalInclusive * p.gstRate / (100 + p.gstRate));
+    const amount = totalInclusive - tax;
     const half = tax / 2;
     return {
       productId: p.id,
@@ -66,7 +74,7 @@ export default function NewInvoicePage() {
       cgst: taxType === "INTRASTATE" ? half : 0,
       sgst: taxType === "INTRASTATE" ? half : 0,
       igst: taxType === "INTERSTATE" ? tax : 0,
-      totalAmount: amount + tax,
+      totalAmount: totalInclusive,
     };
   };
 
@@ -97,12 +105,14 @@ export default function NewInvoicePage() {
     setItems((prev) => calcItems(prev, taxType));
   }, [taxType]);
 
+  const [discount, setDiscount] = useState(0);
+
   const subtotal = items.reduce((s, i) => s + i.amount, 0);
   const totalCGST = items.reduce((s, i) => s + i.cgst, 0);
   const totalSGST = items.reduce((s, i) => s + i.sgst, 0);
   const totalIGST = items.reduce((s, i) => s + i.igst, 0);
   const totalTax = totalCGST + totalSGST + totalIGST;
-  const grandTotal = subtotal + totalTax;
+  const grandTotal = Math.max(0, subtotal + totalTax - discount);
 
   const handleSave = async () => {
     if (!buyerName.trim()) { toast.error("Customer name is required"); return; }
@@ -113,7 +123,7 @@ export default function NewInvoicePage() {
         invoiceNumber: "",
         invoiceDate, dueDate: dueDate || null,
         buyerName, buyerAddress, buyerGST, buyerPhone, buyerEmail,
-        taxType, items, notes, status,
+        taxType, items, notes, status, salesmanName, salesmanPhone,
         subtotal, totalCGST, totalSGST, totalIGST, totalTax, grandTotal,
       });
       toast.success("Invoice created!");
@@ -125,7 +135,7 @@ export default function NewInvoicePage() {
   const f = (n: number) => n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   return (
-    <div className="p-8 max-w-7xl">
+    <div className="p-8">
       <div className="page-header">
         <div className="flex items-center gap-4">
           <Link href="/invoices" className="p-2 rounded-lg hover:bg-[var(--surface2)] transition-colors" style={{ color: "var(--text-muted)" }}>
@@ -141,9 +151,9 @@ export default function NewInvoicePage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
-        {/* LEFT: Meta + Buyer */}
-        <div className="space-y-5">
+      <div className="space-y-6">
+        {/* TOP: Meta + Buyer in a row */}
+        <div className="grid grid-cols-3 gap-6">
           <div className="card p-5">
             <p className="section-label">Invoice Details</p>
             <div className="space-y-3">
@@ -201,13 +211,26 @@ export default function NewInvoicePage() {
           </div>
 
           <div className="card p-5">
-            <p className="section-label">Notes</p>
-            <textarea className="input resize-none" rows={3} placeholder="Payment terms, delivery notes..." value={notes} onChange={(e) => setNotes(e.target.value)} />
+            <p className="section-label">Salesman</p>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs mb-1.5" style={{ color: "var(--text-muted)" }}>Salesman Name</label>
+                <input className="input" placeholder="Salesman name" value={salesmanName} onChange={(e) => setSalesmanName(e.target.value)} />
+              </div>
+              <div>
+                <label className="block text-xs mb-1.5" style={{ color: "var(--text-muted)" }}>Mobile Number</label>
+                <input className="input" placeholder="+91 XXXXX XXXXX" value={salesmanPhone} onChange={(e) => setSalesmanPhone(e.target.value)} />
+              </div>
+              <div>
+                <label className="block text-xs mb-1.5" style={{ color: "var(--text-muted)" }}>Notes</label>
+                <textarea className="input resize-none" rows={3} placeholder="Payment terms, delivery notes..." value={notes} onChange={(e) => setNotes(e.target.value)} />
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* RIGHT: Items + Summary */}
-        <div className="col-span-2 space-y-5">
+        {/* BOTTOM: Items + Summary — full width */}
+        <div className="space-y-5">
           <div className="card overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: "var(--border)" }}>
               <p className="text-sm font-semibold text-white">Line Items</p>
@@ -219,12 +242,12 @@ export default function NewInvoicePage() {
               <table className="tbl">
                 <thead>
                   <tr>
-                    <th style={{ minWidth: 180 }}>Product</th>
-                    <th>HSN</th>
-                    <th>Qty</th>
-                    <th>Unit</th>
-                    <th>Rate (₹)</th>
-                    <th>GST%</th>
+                    <th style={{ minWidth: 200 }}>Product</th>
+                    <th style={{ minWidth: 90 }}>HSN</th>
+                    <th style={{ minWidth: 110 }}>Qty</th>
+                    <th style={{ minWidth: 70 }}>Unit</th>
+                    <th style={{ minWidth: 140 }}>Rate incl. GST (₹)</th>
+                    <th style={{ minWidth: 110 }}>GST%</th>
                     <th>Amount</th>
                     <th>Tax</th>
                     <th>Total</th>
@@ -250,18 +273,24 @@ export default function NewInvoicePage() {
                       <td className="font-mono text-xs" style={{ color: "var(--text-muted)" }}>{item.hsnCode}</td>
                       <td>
                         <input type="number" min="1" step="0.01"
-                          className="input text-xs py-1.5 text-center w-16"
+                          className="input text-xs py-1.5 text-center w-full"
                           value={item.quantity}
-                          onChange={(e) => updateRow(idx, "quantity", parseFloat(e.target.value) || 1)} />
+                          onChange={(e) => updateRow(idx, "quantity", parseFloat(e.target.value) || 0)} />
                       </td>
                       <td className="text-xs" style={{ color: "var(--text-muted)" }}>{item.unit}</td>
                       <td>
                         <input type="number" min="0" step="0.01"
-                          className="input text-xs py-1.5 w-24"
+                          className="input text-xs py-1.5 w-full"
                           value={item.price}
                           onChange={(e) => updateRow(idx, "price", parseFloat(e.target.value) || 0)} />
                       </td>
-                      <td className="font-mono text-xs" style={{ color: "#60a5fa" }}>{item.gstRate}%</td>
+                      <td>
+                        <input type="number" min="0" max="100" step="0.01"
+                          className="input text-xs py-1.5 w-full text-center"
+                          style={{ color: "#60a5fa" }}
+                          value={item.gstRate}
+                          onChange={(e) => updateRow(idx, "gstRate", parseFloat(e.target.value) || 0)} />
+                      </td>
                       <td className="font-mono text-xs text-white">₹{f(item.amount)}</td>
                       <td className="font-mono text-xs" style={{ color: "#fbbf24" }}>₹{f(item.cgst + item.sgst + item.igst)}</td>
                       <td className="font-mono text-xs font-semibold text-white">₹{f(item.totalAmount)}</td>
@@ -308,6 +337,15 @@ export default function NewInvoicePage() {
                 <div className="flex justify-between text-xs" style={{ color: "var(--text-muted)" }}>
                   <span>Total Tax</span>
                   <span className="font-mono">₹{f(totalTax)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span style={{ color: "var(--text-muted)" }}>Discount (₹)</span>
+                  <input type="number" min="0" step="0.01"
+                    className="input text-xs py-1 w-28 text-right font-mono"
+                    style={{ color: "#f87171" }}
+                    value={discount || ""}
+                    placeholder="0.00"
+                    onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)} />
                 </div>
                 <div className="flex justify-between font-bold text-lg pt-2 border-t" style={{ borderColor: "var(--border)" }}>
                   <span className="text-white">Grand Total</span>
