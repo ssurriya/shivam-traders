@@ -31,22 +31,21 @@ export default function InvoiceTemplate({ invoice }: { invoice: Invoice }) {
       <div style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)", padding: "28px 32px", color: "white" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
-            <div style={{ fontSize: "22px", fontWeight: "800", letterSpacing: "-0.5px", marginBottom: "4px" }}>
-              🏪 SHIVAM TRADERS
+            <div style={{ fontSize: "24px", fontWeight: "800", letterSpacing: "-0.5px", marginBottom: "4px" }}>
+              SHIVAM TRADERS
             </div>
-            <div style={{ fontSize: "11px", color: "#94a3b8", lineHeight: "1.6" }}>
-              GST Registered Dealer<br />
-              GSTIN: 33CNWPA3211L1Z1<br />
-              2061, Servaikaran Street, Narayana Pillai Lane <br />
+            <div style={{ fontSize: "12px", color: "#94a3b8", lineHeight: "1.6", fontWeight: "bold" }}>
+              GSTIN : 33CNWPA3211L1Z1<br />
+              Address : 2061, Servaikaran Street, Narayana Pillai Lane <br />
               Karanthai, Thanjavur. 613002 <br />
-              📞 +91 9894988392 · ✉ shivamtraders220396@gmail.com
+              Gpay No : +918248974991
             </div>
           </div>
           <div style={{ textAlign: "right" }}>
             <div style={{ fontSize: "28px", fontWeight: "800", color: "#3b82f6", letterSpacing: "1px" }}>
               TAX INVOICE
             </div>
-            <div style={{ marginTop: "8px", fontSize: "12px", color: "#cbd5e1" }}>
+            <div style={{ marginTop: "8px", fontSize: "14px", color: "#cbd5e1" }}>
               <div><strong style={{ color: "white" }}>Invoice No:</strong> {invoice.invoiceNumber}</div>
               <div><strong style={{ color: "white" }}>Date:</strong> {fDate(invoice.invoiceDate)}</div>
               {invoice.dueDate && <div><strong style={{ color: "white" }}>Due:</strong> {fDate(invoice.dueDate)}</div>}
