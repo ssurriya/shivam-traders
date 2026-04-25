@@ -28,10 +28,10 @@ export default function InvoiceTemplate({ invoice }: { invoice: Invoice }) {
   return (
     <div style={{ fontFamily: "'DM Sans', 'Helvetica', Arial, sans-serif", background: "#ffffff", color: "#1a1a1a", padding: "0", margin: "0", fontSize: "12px" }}>
       {/* Header */}
-      <div style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)", padding: "28px 32px", color: "white" }}>
+      <div style={{ background: "", padding: "28px 32px", color: "white" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
-            <div style={{ fontSize: "24px", fontWeight: "800", letterSpacing: "-0.5px", marginBottom: "4px" }}>
+            <div style={{ color: "black", fontSize: "24px", fontWeight: "800", letterSpacing: "-0.5px", marginBottom: "4px" }}>
               SHIVAM TRADERS
             </div>
             <div style={{ fontSize: "12px", color: "#94a3b8", lineHeight: "1.6", fontWeight: "bold" }}>
@@ -152,8 +152,8 @@ export default function InvoiceTemplate({ invoice }: { invoice: Invoice }) {
               <span>IGST</span><span style={{ fontFamily: "monospace" }}>₹{f(invoice.totalIGST)}</span>
             </div>
           )}
-          <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 16px", background: "#0f172a", color: "white", borderRadius: "8px", marginTop: "8px", fontWeight: "800", fontSize: "15px" }}>
-            <span>GRAND TOTAL</span>
+          <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 16px", background: "", borderRadius: "8px", marginTop: "8px", fontWeight: "800", fontSize: "15px" }}>
+            <span style={{ color: "black" }}>GRAND TOTAL</span>
             <span style={{ fontFamily: "monospace", color: "#60a5fa" }}>₹{f(invoice.grandTotal)}</span>
           </div>
         </div>
