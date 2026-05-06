@@ -10,13 +10,21 @@ import Link from "next/link";
 
 const today = () => new Date().toISOString().split("T")[0];
 
-// price is GST-inclusive; extract base and tax with proper rounding
-// tax = round(price * gstRate / (100 + gstRate) * qty), base = total - tax
-function calcItems(items: InvoiceItem[], taxType: string): InvoiceItem[] {
+function calcItems(items: InvoiceItem[], taxType: string, taxMode: "inclusive" | "exclusive"): InvoiceItem[] {
   return items.map((item) => {
-    const totalInclusive = item.quantity * item.price;
-    const tax = Math.round(totalInclusive * (item.gstRate / 100));
-    const amount = totalInclusive - tax;
+    const base = item.quantity * item.price;
+    let amount: number, tax: number, totalAmount: number;
+    if (taxMode === "exclusive") {
+      // price is base; tax added on top
+      amount = base;
+      tax = Math.round(base * item.gstRate / 100);
+      totalAmount = amount + tax;
+    } else {
+      // price is inclusive; extract tax
+      totalAmount = base;
+      tax = Math.round(totalAmount * item.gstRate / (100 + item.gstRate));
+      amount = totalAmount - tax;
+    }
     const half = tax / 2;
     return {
       ...item,
@@ -24,7 +32,7 @@ function calcItems(items: InvoiceItem[], taxType: string): InvoiceItem[] {
       cgst: taxType === "INTRASTATE" ? half : 0,
       sgst: taxType === "INTRASTATE" ? half : 0,
       igst: taxType === "INTERSTATE" ? tax : 0,
-      totalAmount: totalInclusive,
+      totalAmount,
     };
   });
 }
@@ -54,28 +62,17 @@ export default function NewInvoicePage() {
 
   // Items
   const [items, setItems] = useState<InvoiceItem[]>([]);
+  const [taxMode, setTaxMode] = useState<"inclusive" | "exclusive">("inclusive");
 
   useEffect(() => { api.products.list().then(setProducts); }, []);
 
   const makeItem = (p: Product): InvoiceItem => {
-    const totalInclusive = p.price;
-    const tax = Math.round(totalInclusive * p.gstRate / (100 + p.gstRate));
-    const amount = totalInclusive - tax;
-    const half = tax / 2;
-    return {
-      productId: p.id,
-      productName: p.name,
-      hsnCode: p.hsnCode,
-      unit: p.unit,
-      quantity: 1,
-      price: p.price,
-      gstRate: p.gstRate,
-      amount,
-      cgst: taxType === "INTRASTATE" ? half : 0,
-      sgst: taxType === "INTRASTATE" ? half : 0,
-      igst: taxType === "INTERSTATE" ? tax : 0,
-      totalAmount: totalInclusive,
-    };
+    const [item] = calcItems([{
+      productId: p.id, productName: p.name, hsnCode: p.hsnCode, unit: p.unit,
+      quantity: 1, price: p.price, gstRate: p.gstRate,
+      amount: 0, cgst: 0, sgst: 0, igst: 0, totalAmount: 0,
+    }], taxType, taxMode);
+    return item;
   };
 
   const addRow = () => {
@@ -96,14 +93,14 @@ export default function NewInvoicePage() {
         }
         return next;
       });
-      return calcItems(updated, taxType);
+      return calcItems(updated, taxType, taxMode);
     });
   };
 
-  // Recalculate tax when taxType changes
+  // Recalculate when taxType or taxMode changes
   useEffect(() => {
-    setItems((prev) => calcItems(prev, taxType));
-  }, [taxType]);
+    setItems((prev) => calcItems(prev, taxType, taxMode));
+  }, [taxType, taxMode]);
 
   const [discount, setDiscount] = useState(0);
 
@@ -234,9 +231,25 @@ export default function NewInvoicePage() {
           <div className="card overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: "var(--border)" }}>
               <p className="text-sm font-semibold text-white">Line Items</p>
-              <button onClick={addRow} className="btn-blue text-xs px-3 py-1.5">
-                <Plus size={13} /> Add Item
-              </button>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1 rounded-lg p-1" style={{ background: "var(--surface2)" }}>
+                  <button
+                    onClick={() => setTaxMode("inclusive")}
+                    className="text-xs px-3 py-1 rounded-md transition-colors font-medium"
+                    style={taxMode === "inclusive" ? { background: "var(--accent)", color: "#fff" } : { color: "var(--text-muted)" }}>
+                    Tax Inclusive
+                  </button>
+                  <button
+                    onClick={() => setTaxMode("exclusive")}
+                    className="text-xs px-3 py-1 rounded-md transition-colors font-medium"
+                    style={taxMode === "exclusive" ? { background: "var(--accent)", color: "#fff" } : { color: "var(--text-muted)" }}>
+                    Tax Exclusive
+                  </button>
+                </div>
+                <button onClick={addRow} className="btn-blue text-xs px-3 py-1.5">
+                  <Plus size={13} /> Add Item
+                </button>
+              </div>
             </div>
             <div className="overflow-x-auto">
               <table className="tbl">
@@ -246,7 +259,7 @@ export default function NewInvoicePage() {
                     <th style={{ minWidth: 90 }}>HSN</th>
                     <th style={{ minWidth: 110 }}>Qty</th>
                     <th style={{ minWidth: 70 }}>Unit</th>
-                    <th style={{ minWidth: 140 }}>Rate incl. GST (₹)</th>
+                    <th style={{ minWidth: 140 }}>Rate {taxMode === "inclusive" ? "incl." : "excl."} GST (₹)</th>
                     <th style={{ minWidth: 110 }}>GST%</th>
                     <th>Amount</th>
                     <th>Tax</th>
