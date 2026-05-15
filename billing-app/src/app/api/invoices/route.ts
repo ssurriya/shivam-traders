@@ -36,9 +36,13 @@ export async function POST(req: Request) {
     // Auto-generate invoice number if not provided
     let invNumber = invoiceNumber;
     if (!invNumber) {
-      const count = await prisma.invoice.count();
       const year = new Date().getFullYear();
-      invNumber = `ST-${year}-${String(count + 1).padStart(4, "0")}`;
+      const latest = await prisma.invoice.findFirst({
+        where: { invoiceNumber: { startsWith: `ST-${year}-` } },
+        orderBy: { invoiceNumber: "desc" },
+      });
+      const lastSeq = latest ? parseInt(latest.invoiceNumber.split("-")[2], 10) : 0;
+      invNumber = `ST-${year}-${String(lastSeq + 1).padStart(4, "0")}`;
     }
 
     const invoice = await prisma.invoice.create({
